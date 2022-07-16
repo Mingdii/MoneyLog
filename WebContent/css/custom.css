@@ -1,0 +1,183 @@
+/*  문제 없으면 지우기
+@import url(https://fonts.googleapis.com/earlyaccess/nanumgothic.css);
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
+
+* 
+{
+	font-family: 'Noto Sans KR', sans-serif;
+	font-weight: 400;
+}
+
+
+h1, h2, h3, h4, .navbar-brand
+{
+    font-weight: 900;
+}
+
+h5 
+{
+  font-family: 'Nanum Gothic';
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 300;
+  font-size: 18px;
+}
+
+body
+{
+ 	font-family: 'Noto Sans KR', sans-serif;
+}
+
+#header
+{
+  color: #ffffff;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+#header small
+{
+  color: #cccccc;
+}
+.info
+{
+  margin-top: 3px;
+}
+.dropdown-toggle::after
+{
+    content: none;
+}
+
+
+실질적인 각 내비게이션 메뉴들의 색상 등을 정의
+#sidebar .list-group-item 
+{
+    background-color: #fff7e0;
+    color: #000000;
+    border-color: #d8d6d6;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    border: none;
+    white-space: nowrap;
+}
+내비게이션 아래 끝까지 나열
+#sidebar .list-group 
+{
+    background-color: #fff7e0;
+    min-height: 100vh;
+}
+메뉴를 선택했을 때 부모 요소의 색상을 변경해줌
+#sidebar .list-group .list-group-item[aria-expanded="true"] 
+{
+    background-color: #ffebb1;
+}
+메뉴를 선택했을 때 자식 요소의 색상을 변경해줌
+#sidebar .list-group .list-group-item:not(.collapsed) 
+{
+    background-color: #ffebb1;
+}
+부가 설정
+작은 화면일 때 아이콘 선택을 가능케 함
+#sidebar 
+{
+    overflow: hidden;
+    z-index: 2;
+}
+@media (max-width: 768px) 
+{
+    작은 화면에서는 왼쪽 내비게이션 너비를 정해진 크기 설정
+    #sidebar 
+    {
+        min-width: 35px;
+        max-width: 40px;
+        overflow-y: auto;
+        overflow-x: visible;
+        transition: all 0.25s ease;
+        트랜지션은 네비게이션바 에니메이션을 조금더 부드럽게 만듬
+        transform: translateX(0px);
+        position: fixed;
+    }
+    작은 화면에서 서브 메뉴를 열었을 때 글자가 보이도록 함 (사이드바 넘어서 나옴)
+    #sidebar, #sidebar .list-group
+    {
+        min-width: 35px;
+        overflow: visible;
+    }
+    작은 화면에서 서브 메뉴를 열였을 때 정해진 너비로 보이게 함
+    #sidebar .list-group .collapse.show, #sidebar .list-group .collapsing
+    {
+        position: relative;
+        상대적 위치에 들어가게 하는거임
+        z-index: 1;
+        width: 190px;
+        top: 0;
+    }
+    작아졌을 때 아이콘을 가운데로 정렬해 줌
+    #sidebar .list-group > .list-group-item
+    {
+        text-align: center;
+        padding: .75rem .5rem;
+    }
+    #sidebar::-webkit-scrollbar
+    {
+        width: 0px;
+    }
+}
+
+#main
+{
+    height: 100vh;
+    너비가 큰 경우 scroll이 생기는 태그임
+    overflow-x: scroll;
+}
+@media (max-width: 768px)
+{
+    #main
+    {
+        margin-left: 38px;
+    }
+}
+
+990 픽셀 아래로 내려가면 mobile 클래스는 안보임
+@media (max-width: 990px)
+{
+  .mobile
+  {
+    display: none;
+  }
+  
+}
+
+너비가 560px이하면 안보임(mobile 클래스 있는 것들 중)
+@media (max-width: 560px)
+{
+    .mobile
+    {
+        display: none;
+    }
+}
+.boardTitle
+{
+    background-color: #efefef;
+    padding: 6px;
+}
+.boardContent
+{
+    background-color: #efefef;
+    padding: 6px;
+    height: 320px;
+    overflow-y: scroll;
+}
+
+
+모달(팝업같은거)이 중앙에 뜨도록 + 어떤 브라우저에서도 가능하게  
+.modal
+{
+  -webkit-transform: translate(0,-50%);
+   -o-transform: translate(0,-50%);
+   transform: translate(0,-50%);
+   top: 50%;
+   margin: 0 auto;
+   height: 720px;
+}
+ */

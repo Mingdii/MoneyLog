@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
+/*
+font-family: 'Noto Sans KR';
+*/
+/*reset*/
+*{margin: 0; padding: 0;}
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, tbody, tfoot, thead, tr, th, td{margin:0;padding:0;}
+h1, h2, h3, h4, h5, h6 {font-weight: 700; font-size: inherit;}
+a {text-decoration: inherit; color: inherit;}
+li {list-style: none;}
+img {vertical-align: middle;}
+a img {border: none;}
+address, em, i {font-style: normal;}
+a:focus {outline: none}
+button:focus {outline: none}
+
+* { font-family: 'Noto Sans KR', sans-serif; font-weight: 400; }
+body {font-family: 'Noto Sans KR', sans-serif; font-weight: 400;}
+h1, h2{font-weight: 900;}
+h3, h4{font-weight: 700;}
+h5, h6{font-weight: 500;}
+
+/*custom.css 내용*/
+.navbar { background-color: #FFD97D;}
+.navbar-brand { margin-left: 10px;}
+
+/*버튼*/
+.btn:hover {box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);}
+.btn:active { font-weight: 600; }
+.btn{border: 0;}
+
+.info { margin-top: 3px; }
+.dropdown-toggle::after { content: none; }
+
+
+/*실질적인 각 내비게이션 메뉴들의 색상 등을 정의*/
+#sidebar .list-group-item  { background-color: #fff7e0; color: #000000; border-color: #d8d6d6; border-left: 0; border-right: 0; border-radius: 0; border: none; white-space: nowrap; }
+/*내비게이션 아래 끝까지 나열*/
+#sidebar .list-group  { background-color: #fff7e0; min-height: 100vh; }
+/*메뉴를 선택했을 때 부모 요소의 색상을 변경해줌*/
+#sidebar .list-group .list-group-item[aria-expanded="true"]  { background-color: #ffebb1; }
+/*메뉴를 선택했을 때 자식 요소의 색상을 변경해줌*/
+#sidebar .list-group .list-group-item:not(.collapsed)  { background-color: #ffebb1; }
+
+/*부가 설정*/
+#sidebar  { overflow: hidden; z-index: 2; }
+@media (max-width: 768px) {
+    /*작은 화면에서는 왼쪽 내비게이션 너비를 정해진 크기 설정*/
+    #sidebar { min-width: 35px; max-width: 40px; overflow-y: auto; overflow-x: visible; transition: all 0.25s ease; transform: translateX(0px); position: fixed; }
+    /*작은 화면에서 서브 메뉴를 열었을 때 글자가 보이도록 */
+    #sidebar, #sidebar .list-group { min-width: 35px; overflow: visible; }
+    /*작은 화면에서 서브 메뉴를 열였을 때 정해진 너비로*/
+    #sidebar .list-group .collapse.show, #sidebar .list-group .collapsing { position: relative; z-index: 1; width: 190px; top: 0; }
+    /* 작아졌을 때 아이콘을 가운데로 정렬*/
+    #sidebar .list-group > .list-group-item { text-align: center; padding: .75rem .5rem; }
+    #sidebar::-webkit-scrollbar { width: 0px; }
+}
+
+#main { height: 100vh; overflow-x: scroll; }
+@media (max-width: 768px) {
+    #main { margin-left: 38px; }
+}
+/* 990  */
+@media (max-width: 990px) {
+    .mobile { display: none; }
+}
+/*560px*/
+@media (max-width: 560px) {
+    .mobile{ display: none; }
+}
+
+.boardTitle { background-color: #efefef; padding: 6px; }
+.boardContent { background-color: #efefef; padding: 6px; height: 320px; overflow-y: scroll; }
+
+
+/* 모달 중앙 정렬 + 어떤 브라우저에서도 가능하게   */
+.modal { -webkit-transform: translate(0,-50%); -o-transform: translate(0,-50%); transform: translate(0,-50%); top: 50%; margin: 0 auto; height: 720px; }
+
+
+/*userLogin.jsp*/
+#login-main { text-align: center; color: #FF9B85; margin: 30px; font-size: 50px; font-weight: 900; }
+#login-form { width: 300px; background-color: #FFD97D; color: #9b9b9b; border-radius: 5px; margin-left: auto; margin-right: auto; padding: 20px; place-items: center; display: grid; }
+.text-field  { width: 100%; font-size: 14px; margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+#login-btn { width: 260px; margin-bottom: 10px; padding: 10px; border-radius: 5px; background-color: #FF9B85; border: none; }
+#userLogin .login-banner { padding-top: 40px; place-items: center; display: grid; }
+#userLogin .lgoin-banner>div {text-align: center;}
+#userLogin #login-links {margin-top: 10px;}
+#userLogin #err {color: red; display: none;}
+
+/* 회원가입 */
+#sign-up-intro { font-size: 20px; text-align: left; }
+#sign-up-moneylog { font-size: 18px; color: #EFD345;}
+.sign-up-form { max-width: 600px; margin-left: auto; margin-right: auto; }
+#sign-up-info { font-size: 18px; text-align: left;}
+.sign-up-icon { text-align: center; padding: 17px; background-color: #f8f9fa; margin-top: 5px;}
+
+/* 이용약관
+userSuTerms */
+/*회원가입 상단 아이콘*/
+.sign-up-process ul { list-style:none; margin:0; padding:0; }
+.sign-up-process li { margin: 0 0 0 0; padding: 0 0 0 0; border : 0; float: left; }
+
+/* 동의 약관
+   userSuTerms */
+#joinForm *{ margin: 0; padding:0; box-sizing:border-box; }
+#joinForm body { background-color:#f7f7f7; }
+#joinForm ul li, .checkBox ul li { list-style:none }
+#joinForm a { text-decoration: none; }
+#joinForm .clearfix ::after { display:block; clear:both; }
+#joinForm { width: 600px; margin: 0 auto; }
+ul .join_box { border: 1px solid #ddd; background-color: #fff; }
+.checkBox,.checkBox>ul { position: relative; }
+.checkBox>ul>li { float:left; }
+.checkBox ul li:first-child { width: 85%; padding: 15px; font-weight: 600; color: #888; }
+.checkBox ul li:nth-child(2) {position: absolute; /*top:50%;*/ right: 30px; margin-top: -12px; }
+.checkBox textarea { width: 100%; margin: 0 2%; background-color: #f7f7f7; color: #888; border: none; }
+.footBtwrap { margin-top: 15px; }
+.footBtwrap>li { float: left; width: 50%; height: 60px; }
+.footBtwrap>li>button { display: block; width: 98%; height: 100%;  font-size: 20px; text-align: center; line-height: 50px; }
+.fpmgBt1 { background-color: #F5CAC3; color:#888; border-radius: 30px; }
+.fpmgBt2 { background-color: #92B4EC; color: black; border-radius: 30px; }
+.fpmgBt1:hover { box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5); font-weight: 600;}
+.fpmgBt2:hover { box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5); font-weight: 600;}
+.check-detail { min-height: 200px; }
+
+/* userSuCertified.jsp */
+#userSuCertified .su-input-form { padding-top: 15px; margin-bottom: 15px; max-width: 720px; }
+#userSuCertified #goSMS {background-color: #F5CAC3; float: right; min-width: 90px;}
+#userSuCertified #confirmBnt { background-color: #F5CAC3; float: right; min-width: 90px; }
+#userSuCertified #prePage { margin-bottom: 15px; background-color: #9b9b9b; float: left; }
+#userSuCertified #nextBtn { background-color: #92B4EC; float: right; }
+
+/* userSuInfoInput.jsp */
+#userSuInfoInput .progress { max-width: 600px; background-color:#9b9b9b; }
+#userSuInfoInput .progress-bar { font-size: 17pt; width: 33%; }
+#userSuInfoInput .form-control {max-width: 500px; margin-bottom: 10px;}
+#userSuInfoInput .form-group label { font-weight: 600; }
+#userSuInfoInput #nextBtn { width: 80px; height: 30px; background-color: #92B4EC; float: right; margin: 20px 40px; }
+#userSuInfoInput .alert { max-width: 500px; margin-bottom: 5px; }
+
+/* 회원가입 정보입력 */
+.sign-up-title { font-weight: 900; }
+
+/* userSuPlusInputFst.jsp */
+#userSuPlusInputFst .table th, td {text-align: center;}
+#userSuPlusInputFst .progress {max-width: 600px; background-color:#9b9b9b;}
+#userSuPlusInputFst .progress-bar {font-size: 17pt; width: 66%;}
+#userSuPlusInputFst .sign-up-title { margin-bottom: 10px; }
+#userSuPlusInputFst .form-control {text-align: center;}
+#userSuPlusInputFst .pre-btn {margin-bottom: 20px; background-color: #9b9b9b; float: left;}
+#userSuPlusInputFst #next-btn { margin-bottom: 20px; background-color: #92B4EC; float: right;}
+
+/* userSuPlusInputSec.jsp */
+#userSuPlusInputSec .progress { max-width: 600px; background-color:#9b9b9b; }
+#userSuPlusInputSec .progress-bar { font-size: 17pt; width: 100%; }
+#userSuPlusInputSec .table>tbody>tr>th {text-align: center;}
+#userSuPlusInputSec .table td {text-align: center;}
+#userSuPlusInputSec #preBtn { margin-bottom: 15px; background-color: #9b9b9b; float: left; }
+#userSuPlusInputSec #nextBtn { margin-bottom: 15px; background-color: #92B4EC; float: right; }
+#userSuPlusInputSec #errMsg { color: red; display: none; }
+
+/* userSuOk.jsp */
+#userSuOk .sign-up-form {border-radius: 3px; margin-top: 15px; background-color: #f8f9fa;}
+#userSuOk #joinOk { max-width: 720px; margin: 15px 0; }
+#userSuOk #joinOk>div{text-align: center;}
+#userSuOk #joinOk>div>img { width: 50px; }
+#userSuOk #joinOk>div h4 { font-size: 24px; margin-top: 10px; }
+#userSuOk #joinOk:last-child {text-align: center; margin-top: 20px;}
+#userSuOk #joinOk button { margin-bottom: 15px; background-color: #92B4EC; }
+
+/* userIdCertified.jsp */
+#userIdCertified .sign-up-form { width: 560px; }
+#userIdCertified .id-find {border-radius: 3px; margin-top: 15px; background-color: #f8f9fa;}
+#userIdCertified #idForm { max-width: 720px; padding-top: 15px; margin-bottom: 15px; }
+#userIdCertified #goSMS { margin-top: 5px; background-color: #F5CAC3; float: right; min-width: 100px; }
+#userIdCertified #confirmBnt { margin-top: 5px; background-color: #F5CAC3; float: right; min-width: 100px;  }
+#userIdCertified #nextBtn { margin-bottom: 18px; background-color: #92B4EC; float: right; }
+
+/* userIdCertifiedOk.jsp */
+#userIdCertifiedOk > div { margin: 25px; }
+#userIdCertifiedOk .sign-up-form { margin-top: 15px; border-radius: 3px; }
+#userIdCertifiedOk .sign-up-form form {padding-top: 15px; margin-bottom: 15px; max-width: 720px; }
+#userIdCertifiedOk .sign-up-form form img { width: 50px; margin-bottom: 15px; }
+#userIdCertifiedOk .text-center {margin-top: 15px;}
+#userIdCertifiedOk .text-center > button { margin-bottom: 15px; background-color: #92B4EC; }
+
+/* userIdNo.jsp */
+#userIdNo > div { margin: 25px; }
+#userIdNo .sign-up-form { border-radius: 3px; }
+#userIdNo .sign-up-form form { padding-top: 15px; margin-bottom: 15px; max-width: 720px }
+#userIdNo .sign-up-form .form-group { text-align: center; }
+#userIdNo .sign-up-form .form-group > img { width: 50px; margin-bottom: 15px; }
+#userIdNo #btn-div { text-align: center; margin-top: 15px; }
+#userIdNo #btn-div .btn { margin-bottom: 15px; background-color:  #92B4EC; }
+
+/* userPwCertified.jsp */
+#userPwCertified #findpw { padding-top: 15px; margin-bottom: 15px; max-width: 720px; }
+#userPwCertified #goSMS { margin-top: 3px; background-color: #F5CAC3; float: right; min-width: 90px; }
+#userPwCertified #confirmBnt { margin-top: 3px; background-color: #F5CAC3; float: right; min-width: 90px; }
+#userPwCertified #nextBtn { margin-bottom: 15px; background-color:  #92B4EC; float: right; }
+
+/* userPwCertifiedOk.jsp */
+#userPwCertifiedOk form { padding-top: 15px; margin-bottom: 15px; max-width: 720px; }
+#userPwCertifiedOk img { margin-bottom: 15px; width: 50px; }
+#userPwCertifiedOk .go-login { margin-top: 15px; }
+#userPwCertifiedOk .go-login > button { margin-bottom: 15px; background-color: #92B4EC; }
+
+/* userPwNo.jsp */
+#userPwNo form { padding-top: 15px; margin-bottom: 15px; max-width: 720px; }
+#userPwNo form img { margin-bottom: 15px; width: 50px; }
+#userPwNo .find-id-div {text-align: center; margin-top: 15px;}
+#userPwNo .find-id-btn {margin-bottom: 15px; background-color: #92B4EC; }
+#userPwNo .go-login-btn { margin-bottom: 15px; background-color: #92B4EC; }
+
+/*달력*/
+.calendar-border { border: 1px solid black; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

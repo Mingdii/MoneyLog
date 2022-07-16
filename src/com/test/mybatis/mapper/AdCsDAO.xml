@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.mvc.IAdCsDAO">
+	
+	<!-- ▼ 공지사항 ▼ -->
+	
+	<!-- 공지사항 페이징 - 전체 공지사항 개수 -->
+	<select id="adNotiCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) AS COUNT
+		FROM NOTI
+	</select>
+
+
+	<!-- 공지사항 리스트 출력 - 상단고정글(우선순위)과 최신글(차순위) 순서로) → 글번호는 수정예정 -->
+	<select id="adNotiList" resultType="com.test.mvc.AdCsDTO">	
+		SELECT RNUM, A.NOTI_CD, A.NOTI_TITLE, A.AD_ID, A.NOTI_DATE, A.NOTI_VIEW, A.NOTI_PIN
+		FROM
+		(
+		    SELECT ROW_NUMBER() OVER(ORDER BY (CASE WHEN N.NOTI_PIN = 'Y' THEN 1 ELSE 2 END) DESC, N.NOTI_DATE ASC) AS RNUM, N.NOTI_CD, N.NOTI_TITLE, AI.AD_ID, N.NOTI_DATE, N.NOTI_VIEW, N.NOTI_PIN
+		    FROM NOTI N LEFT JOIN AD_INFO AI
+		    ON N.AD_CD = AI.AD_CD
+		)A
+		WHERE RNUM <![CDATA[ >= ]]> #{start } AND RNUM <![CDATA[ <= ]]> #{end }
+		ORDER BY RNUM DESC
+	</select>
+	
+	
+	<!-- 공지사항 조회 - 게시물 기본 내용 -->
+	<select id="adNotiView" resultType="com.test.mvc.AdCsDTO">
+		SELECT N.NOTI_CD, N.NOTI_DATE, AI.AD_ID, N.NOTI_PIN, N.NOTI_TITLE, N.NOTI_CONT
+		FROM NOTI N LEFT JOIN AD_INFO AI
+		ON N.AD_CD = AI.AD_CD
+		WHERE N.NOTI_CD = #{noti_cd }
+	</select>
+	
+	
+	<!-- 공지사항 게시물 조회수 증가 -->
+	<update id="adNotiViewPlus">
+		UPDATE NOTI
+		SET NOTI_VIEW = NOTI_VIEW+1
+		WHERE NOTI_CD = #{noti_cd }
+	</update>
+	
+	
+	<!-- 공지사항 수정 -->
+	<update id="adNotiModify">
+		UPDATE NOTI
+		SET NOTI_TITLE = #{noti_title}, NOTI_CONT = #{noti_cont }, NOTI_PIN = #{noti_pin}
+		WHERE NOTI_CD = #{noti_cd }
+	</update>
+	
+	
+	<!-- 공지사항 삭제 -->
+	<delete id="adNotiDelete">
+		DELETE
+		FROM NOTI
+		WHERE NOTI_CD = #{noti_cd }
+	</delete>
+	
+	
+	<!-- 공지사항 등록 -->
+	<insert id="adNotiInsert">
+		INSERT INTO NOTI(NOTI_CD, AD_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_PIN)
+		VALUES(NOTI_SEQ.NEXTVAL, #{ad_cd}, #{noti_title}, #{noti_cont}, 0, #{noti_pin})
+	</insert>
+
+	<!-- ▼ 문의글 ▼ -->
+	
+	<!-- 문의글 페이징 - 전체 문의글 개수 -->
+	<select id="adQnaCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) AS COUNT
+		FROM QNA
+	</select>
+
+
+	<!-- 문의글 리스트 출력 → 글번호는 수정예정 -->
+	<select id="adQnaList" resultType="com.test.mvc.AdCsDTO">
+		SELECT RNUM, B.QNA_CD, B.QNA_TITLE, B.AD_ANSR, B.USER_NAME, B.QNA_DATE, B.QNA_VIEW
+		FROM
+		( 
+			SELECT ROW_NUMBER() OVER(ORDER BY (CASE WHEN QA.AD_ANSR = '완료' THEN 2 ELSE 1 END) DESC, QA.QNA_DATE ASC) AS RNUM
+				 , QA.QNA_CD, QA.QNA_TITLE, QA.AD_ANSR, QA.USER_NAME, QA.QNA_DATE, QA.QNA_VIEW
+			FROM
+			(
+			    SELECT Q.QNA_CD, Q.QNA_TITLE, DECODE(AA.AD_ANSR_CD, NULL , '-', '완료') "AD_ANSR"
+			         , UI.USER_NAME, Q.QNA_DATE, Q.QNA_VIEW
+			    FROM QNA Q LEFT JOIN AD_ANSR AA
+			    ON Q.QNA_CD = AA.QNA_CD
+			    LEFT JOIN USER_INFO UI
+			    ON Q.USER_DSTN_CD = UI.USER_DSTN_CD
+			)QA
+		)B
+		WHERE RNUM <![CDATA[ >= ]]> #{start } AND RNUM <![CDATA[ <= ]]> #{end }
+		ORDER BY RNUM DESC
+	</select>
+	
+	
+	<!-- 문의글 조회 -->
+	<select id="adQnaView" resultType="com.test.mvc.AdCsDTO">
+		SELECT Q.QNA_TITLE, UI.USER_NAME, UI.USER_ID, Q.QNA_CD, Q.QNA_DATE, Q.QNA_CONT, AA.AD_ANSR_CD, AA.AD_ANSR_CONT, AA.AD_ANSR_DATE
+		FROM QNA Q 
+		LEFT JOIN USER_INFO UI
+		ON Q.USER_DSTN_CD = UI.USER_DSTN_CD
+		LEFT JOIN AD_ANSR AA
+		ON Q.QNA_CD = AA.QNA_CD
+		WHERE Q.QNA_CD = #{qna_cd }
+	</select>
+	
+	
+	<!-- 문의 답변 - 등록 -->
+	<insert id="adQnaInsert">
+		INSERT INTO AD_ANSR(AD_ANSR_CD, AD_CD, QNA_CD, AD_ANSR_CONT, AD_ANSR_DATE)
+		VALUES(AD_ANSR_SEQ.NEXTVAL, #{ad_cd }, #{qna_cd }, #{ad_ansr_cont }, SYSDATE)
+	</insert>
+	
+	
+	<!-- 문의글 답변 - 삭제 -->
+	<delete id="adQnaDelete">
+		DELETE
+		FROM AD_ANSR
+		WHERE AD_ANSR_CD = #{ad_ansr_cd }
+	</delete>
+	
+	
+	<!-- 문의 답변 - 수정 -->
+	<update id="adQnaModify">
+		UPDATE AD_ANSR
+		SET AD_CD = #{ad_cd }, AD_ANSR_CONT = #{ad_ansr_cont }
+		WHERE AD_ANSR_CD = #{ad_ansr_cd }
+	</update>
+	
+</mapper>

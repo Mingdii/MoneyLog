@@ -1,0 +1,783 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.mvc.IUserDAO">
+		
+	<!-- 로그인 -->
+	<select id="login" resultType="com.test.mvc.UserDTO" parameterType="java.lang.String">      
+	     SELECT USER_DSTN_CD, USER_NAME
+	     FROM USER_INFO
+	     WHERE USER_ID = #{user_id}
+	       AND (SELECT USER_PW
+	             FROM USER_INFO
+	             WHERE USER_ID = #{user_id}) = CRYPTPACK.ENCRYPT(#{user_pw}, '123456')
+	</select>
+	
+
+	<!-- 회원등록 -->	
+	<insert id="add" statementType="CALLABLE">
+		call PRC_USER_INSERT(#{user_id}, #{user_name}, #{user_pw}, #{user_tel}
+						   , #{ssn}, #{mrg_cd}, #{child_cd}, #{fml_cd}, #{pet_cd}
+						   , #{car_cd}, #{house_cd}, #{area_sec_cd}, #{job_sec_cd})
+	</insert>
+	
+	
+	<!-- 6월 수입 총액 -->
+	<select id="monthInTotFst" resultType="java.lang.Integer" parameterType="com.test.mvc.UserDTO">
+		SELECT NVL(SUM(A.AMNT),0)
+		FROM ACNT A JOIN CATE_SEC CS
+		  ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		     JOIN CATE_FST CF
+		       ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE A.USER_DSTN_CD=#{user_dstn_cd}
+		  AND FN_YEAR(ACNT_DATE)='2022' AND FN_MON(ACNT_DATE)='6'
+		  AND CF.INOUT_CD=1
+	</select>
+	
+	<!-- 6월 지출 총액 -->
+	<select id="monthOutTotFst" resultType="java.lang.Integer" parameterType="com.test.mvc.UserDTO">
+		SELECT NVL(SUM(A.AMNT),0)
+		FROM ACNT A JOIN CATE_SEC CS
+		  ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		     JOIN CATE_FST CF
+		       ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE USER_DSTN_CD=#{user_dstn_cd}
+		  AND FN_YEAR(ACNT_DATE)='2022' AND FN_MON(ACNT_DATE)='6'
+		  AND CF.INOUT_CD=2
+	</select>
+	
+	
+	<!-- 해당월 수입 총액 -->
+	<select id="monthInTot" resultType="java.lang.Integer" parameterType="com.test.mvc.UserDTO">
+		SELECT NVL(SUM(A.AMNT),0)
+		FROM ACNT A JOIN CATE_SEC CS
+		  ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		     JOIN CATE_FST CF
+		       ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE A.USER_DSTN_CD=#{user_dstn_cd}
+		  AND FN_YEAR(ACNT_DATE)=#{year} AND FN_MON(ACNT_DATE)=#{month}
+		  AND CF.INOUT_CD=1
+	</select>
+	
+	<!-- 해당월 지출 총액 -->
+	<select id="monthOutTot" resultType="java.lang.Integer" parameterType="com.test.mvc.UserDTO">
+		SELECT NVL(SUM(A.AMNT),0)
+		FROM ACNT A JOIN CATE_SEC CS
+		  ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		     JOIN CATE_FST CF
+		       ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE USER_DSTN_CD=#{user_dstn_cd}
+		  AND FN_YEAR(ACNT_DATE)=#{year} AND FN_MON(ACNT_DATE)=#{month}
+		  AND CF.INOUT_CD=2
+	</select>
+	
+	<!-- 해당월 잔액 -->
+	<select id="nowRemain" resultType="java.lang.Integer" parameterType="com.test.mvc.UserDTO">
+		SELECT ( SELECT NVL(SUM(AMNT),0)
+		         FROM ACNT_INOUT_VIEW
+		         WHERE USER_DSTN_CD=#{user_dstn_cd} AND INOUT_CD=1) 
+		     - ( SELECT NVL(SUM(AMNT),0)
+		         FROM ACNT_INOUT_VIEW
+		         WHERE USER_DSTN_CD=#{user_dstn_cd} AND INOUT_CD=2)
+		FROM DUAL
+	</select>
+	
+	<!-- 당일 수입 총액 -->
+	<!-- 
+	<select id="dayInTot" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer">
+		SELECT NVL(SUM(AIV.AMNT),0)
+		FROM ACNT_INOUT_VIEW AIV LEFT JOIN USER_INFO UI
+		  ON AIV.USER_DSTN_CD = UI.USER_DSTN_CD
+		WHERE UI.USER_DSTN_CD = 1008 AND AIV.INOUT_CD = 1
+		  AND AIV.ACNT_DATE = TO_DATE('2022'||FN_TWONUM(5)||FN_TWONUM(8))
+	</select>
+	-->
+	
+	<!-- 당일 지출 총액 -->
+	<!-- 
+	<select id="dayOutTot" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer">
+		SELECT NVL(SUM(AIV.AMNT),0)
+		FROM ACNT_INOUT_VIEW AIV LEFT JOIN USER_INFO UI
+		  ON AIV.USER_DSTN_CD = UI.USER_DSTN_CD
+		WHERE UI.USER_DSTN_CD = 1008 AND AIV.INOUT_CD = 2
+		  AND AIV.ACNT_DATE = TO_DATE('2022'||FN_TWONUM(5)||FN_TWONUM(8))
+	</select>
+	-->
+	
+	<!-- 해당월 수입 리스트 출력 -->
+	<select id="monthInList" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+		SELECT AIV.USER_DSTN_CD AS USER_DSTN_CD
+		     , AIV.ACNT_DATE AS ACNT_DATE
+		     , CF.CATE_FST_NAME AS CATE_FST_NAME
+		     , CS.CATE_SEC_NAME AS CATE_SEC_NAME
+		     , AIV.INOUT_CD AS INOUT_CD
+		     , AIV.ACNT_DTL_CONT AS ACNT_DTL_CONT
+		     , AIV.AMNT AS AMNT
+		FROM ACNT_INOUT_VIEW AIV LEFT JOIN CATE_SEC CS
+		  ON AIV.CATE_SEC_CD = CS.CATE_SEC_CD
+		     LEFT JOIN CATE_FST CF
+		       ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE AIV.USER_DSTN_CD = #{user_dstn_cd}
+		  AND FN_YEAR(AIV.ACNT_DATE)=#{year} AND FN_MON(AIV.ACNT_DATE)=#{month}
+		  AND AIV.INOUT_CD = 1
+		ORDER BY ACNT_DATE
+	</select>
+	
+	
+	<!-- 해당월 지출 리스트 출력 -->
+	<select id="monthOutList" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+		SELECT AIV.USER_DSTN_CD AS USER_DSTN_CD
+		     , AIV.ACNT_DATE AS ACNT_DATE
+		     , CF.CATE_FST_NAME AS CATE_FST_NAME
+		     , CS.CATE_SEC_NAME AS CATE_SEC_NAME
+		     , AIV.INOUT_CD AS INOUT_CD
+		     , AIV.ACNT_DTL_CONT AS ACNT_DTL_CONT
+		     , AIV.AMNT AS AMNT
+		FROM ACNT_INOUT_VIEW AIV LEFT JOIN CATE_SEC CS
+		  ON AIV.CATE_SEC_CD = CS.CATE_SEC_CD
+		     LEFT JOIN CATE_FST CF
+		       ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE AIV.USER_DSTN_CD = #{user_dstn_cd}
+		  AND FN_YEAR(AIV.ACNT_DATE)=#{year} AND FN_MON(AIV.ACNT_DATE)=#{month}
+		  AND AIV.INOUT_CD = 2
+		ORDER BY ACNT_DATE
+	</select>
+	
+	
+	<!-- 당일 가계부 리스트 출력 -->
+	<select id="dayInoutList" resultType="com.test.mvc.UserDTO">
+		SELECT I.INOUT_CONT AS INOUT_CONT
+		     , AIV.ACNT_DATE AS ACNT_DATE
+		     , CF.CATE_FST_NAME AS CATE_FST_NAME
+		     , CS.CATE_SEC_NAME AS CATE_SEC_NAME
+		     , AIV.ACNT_DTL_CONT AS ACNT_DTL_CONT
+		     , AIV.AMNT AS AMNT
+		FROM ACNT_INOUT_VIEW AIV LEFT JOIN CATE_SEC CS
+				  ON AIV.CATE_SEC_CD = CS.CATE_SEC_CD
+				     LEFT JOIN CATE_FST CF
+				       ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		                  LEFT JOIN INOUT I
+		                    ON CF.INOUT_CD = I.INOUT_CD
+		WHERE AIV.USER_DSTN_CD = #{user_dstn_cd} AND AIV.ACNT_DATE = TO_DATE(#{yearMonthDay}, 'YYYY-MM-DD')
+		ORDER BY ACNT_CD DESC
+	</select>
+	
+	
+	<!-- 내 전체 수입 평균 출력 -->
+	<select id="allInAvg" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer" >
+		SELECT AVG(NVL(SUM(AMNT), 0))
+		FROM ACNT_INOUT_VIEW
+		WHERE USER_DSTN_CD=#{user_dstn_cd}
+		  AND INOUT_CD = 1
+		GROUP BY FN_YEAR(ACNT_DATE)||FN_MON(ACNT_DATE)
+	</select>
+	
+	<!-- 내 전체 지출 평균 출력 -->
+	<select id="allOutAvg" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer" >
+		SELECT AVG(NVL(SUM(AMNT), 0))
+		FROM ACNT_INOUT_VIEW
+		WHERE USER_DSTN_CD=#{user_dstn_cd}
+		  AND INOUT_CD = 2
+		GROUP BY FN_YEAR(ACNT_DATE)||FN_MON(ACNT_DATE)
+	</select>
+
+	
+	<!-- 비슷한 이용자 전체 수입 평균 출력 -->
+	<select id="similarInAvg" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer" >
+		SELECT NVL(AVG(AMNT), 0)
+		FROM ACNT_INOUT_VIEW AIV JOIN USER_PLUS UP
+		  ON AIV.USER_DSTN_CD = UP.USER_DSTN_CD
+		     JOIN AREA_SEC AR
+		       ON UP.AREA_SEC_CD = AR.AREA_SEC_CD
+		          JOIN JOB_SEC JS
+		            ON UP.JOB_SEC_CD = JS.JOB_SEC_CD
+		WHERE AIV.INOUT_CD=1 AND UP.MRG_CD=1 AND UP.CHILD_CD=1 AND UP.FML_CD=1
+		  AND UP.PET_CD=1 AND UP.CAR_CD=1 AND UP.HOUSE_CD=1 
+		  AND AR.AREA_FST_CD=1 AND JS.JOB_FST_CD=1
+	</select>
+	
+	<!-- 비슷한 이용자 전체 지출 평균 출력 -->
+	<select id="similarOutAvg" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer" >
+		SELECT NVL(AVG(AMNT), 0)
+		FROM ACNT_INOUT_VIEW AIV JOIN USER_PLUS UP
+		  ON AIV.USER_DSTN_CD = UP.USER_DSTN_CD
+		     JOIN AREA_SEC AR
+		       ON UP.AREA_SEC_CD = AR.AREA_SEC_CD
+		          JOIN JOB_SEC JS
+		            ON UP.JOB_SEC_CD = JS.JOB_SEC_CD
+		WHERE AIV.INOUT_CD=2 AND UP.MRG_CD=1 AND UP.CHILD_CD=1 AND UP.FML_CD=1
+		  AND UP.PET_CD=1 AND UP.CAR_CD=1 AND UP.HOUSE_CD=1 
+		  AND AR.AREA_FST_CD=1 AND JS.JOB_FST_CD=1
+	</select>
+	
+	
+	<!-- 머니리뷰 기준 - 4달간 카운트 현황 -->
+	<select id="pigTotCount" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer" >
+		SELECT NVL(FO_MON_CNT, 0)
+		FROM ACIV_COUNT_VIEW
+		WHERE USER_DSTN_CD=#{user_dstn_cd}
+	</select>
+	
+	<!-- 머니리뷰 기준 - 한달 카운트 현황 -->
+	<select id="pigMonthCount" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer" >
+		SELECT NVL(MON_CNT, 0)
+		FROM ACIV_COUNT_VIEW
+		WHERE USER_DSTN_CD=#{user_dstn_cd}
+	</select>
+	
+	<!-- 구분(수입/지출) 출력 -->
+	<select id="inoutCateList" resultType="com.test.mvc.UserDTO">
+		SELECT INOUT_CD, INOUT_CONT
+		FROM INOUT
+	</select>
+	
+	<!-- 1차 카테고리 출력(전체) -->
+	<select id="fstCateList" resultType="com.test.mvc.UserDTO">
+		SELECT CATE_FST_CD, CATE_FST_NAME, INOUT_CD
+		FROM CATE_FST
+	</select>
+	
+	<!-- 2차 카테고리 출력(전체 출력) -->
+	<select id="secCateList" resultType="com.test.mvc.UserDTO">
+		SELECT CATE_SEC_CD, CATE_SEC_NAME, CATE_FST_CD
+		FROM CATE_SEC
+	</select>
+	
+	<!-- 가계부 등록 -->
+	<insert id="acntReg">
+		INSERT INTO ACNT(ACNT_CD, USER_DSTN_CD, ACNT_DATE, CATE_SEC_CD, ACNT_DTL_CONT, AMNT) 
+		VALUES(ACNT_SEQ.NEXTVAL, #{user_dstn_cd}, TO_DATE( #{yearMonthDay}, 'YYYY-MM-DD')
+			 , #{cate_sec_cd} , #{acnt_dtl_cont}, #{amnt})
+	</insert>
+	<!-- 
+	<select id="acntReg" parameterType="com.test.mvc.UserDTO" resultType="java.lang.Integer">
+		INSERT INTO ACNT(ACNT_CD, USER_DSTN_CD, ACNT_DATE, CATE_SEC_CD, ACNT_DTL_CONT, AMNT) 
+		VALUES(ACNT_SEQ.NEXTVAL, #{user_dstn_cd}
+		     , TO_DATE(#{year}||FN_TWONUM(#{month})||FN_TWONUM(#{day}), 'YYYY-MM-DD')
+			 , #{cate_sec_cd} , #{acnt_dtl_cont}, #{amnt})
+	</select>
+	-->
+	<!-- 1차 카테고리 출력_수입 -->
+	<!-- 
+	<select id="fstCateListOne" parameterType="com.test.mvc.UserDTO" resultType="com.test.mvc.UserDTO">
+		SELECT CATE_FST_CD, CATE_FST_NAME
+		FROM CATE_FST
+		WHERE INOUT_CD=1
+	</select>
+	-->
+	<!-- 1차 카테고리 출력_지출 -->
+	<!-- 
+	<select id="fstCateListTwo" parameterType="com.test.mvc.UserDTO" resultType="com.test.mvc.UserDTO">
+		SELECT CATE_FST_CD, CATE_FST_NAME
+		FROM CATE_FST
+		WHERE INOUT_CD=2
+	</select>
+	 -->   
+	 
+	<!-- 내가 쓴 게시글 조회 -->
+	<select id="myPostList" resultType="com.test.mvc.UserDTO">
+	    SELECT P.POST_CD, P.POST_TITLE, 
+      		   (SELECT COUNT(C.CMNT_CD) 
+                FROM CMNT C LEFT JOIN CMNT_REPT CR 
+                  ON C.CMNT_CD = CR.CMNT_CD
+                WHERE CR.CMNT_REPT_CD IS NULL 
+                  AND C.POST_CD = P.POST_CD) "COUNT_CMNT"
+              , P.POST_DATE, P.POST_VIEW
+        FROM POST P 
+        LEFT JOIN POST_REPT RP
+        ON P.POST_CD = RP.POST_CD
+        WHERE RP.POST_REPT_CD IS NULL
+          AND P.USER_DSTN_CD = #{user_dstn_cd }
+        ORDER BY P.POST_CD DESC
+	</select>
+	
+	
+	<!-- 내가 쓴 댓글 조회 -->
+	<select id="myCmntList" resultType="com.test.mvc.UserDTO">
+		SELECT POST_CD, CMNT_CONT, CMNT_DATE
+		FROM CMNT 
+		WHERE USER_DSTN_CD = #{user_dstn_cd}
+		ORDER BY CMNT_CD DESC
+	</select>
+	
+	<!-- 내가 쓴 문의글 조회 -->
+	<select id="myQnaList" resultType="com.test.mvc.UserDTO">
+		SELECT QNA_CD, QNA_TITLE, QNA_DATE
+		FROM QNA
+		WHERE USER_DSTN_CD = #{user_dstn_cd}
+		ORDER BY QNA_CD DESC
+	</select> 
+	
+	
+	<!-- 비밀번호 확인 -->
+	<!-- 여기서 비밀번호 + 이용자 기존정보까지 조회 해서 model 에 add해서 가져감 -->
+	<select id="myCheckPw" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+      SELECT CRYPTPACK.DECRYPT(UI.USER_PW, '123456') "USER_PW"
+            , UI.USER_TEL, UI.USER_DATE, UP.SSN, UP.MRG_CD
+     		, UP.CHILD_CD, UP.FML_CD, UP.PET_CD, UP.CAR_CD, UP.HOUSE_CD
+     		, ASE.AREA_FST_CD, UP.AREA_SEC_CD, JS.JOB_FST_CD, UP.JOB_SEC_CD
+	  FROM USER_PLUS UP
+	  LEFT JOIN USER_INFO UI
+	  ON UP.USER_DSTN_CD = UI.USER_DSTN_CD
+	  LEFT JOIN AREA_SEC ASE
+	  ON UP.AREA_SEC_CD = ASE.AREA_SEC_CD
+	  LEFT JOIN JOB_SEC JS
+	  ON UP.JOB_SEC_CD = JS.JOB_SEC_CD
+	  WHERE UI.USER_DSTN_CD = #{user_dstn_cd}	 
+   </select>
+   
+   
+   <!--  내 정보에서 전화번호 수정쿼리  -> 안씀 전화번호 본인이 수정 불가 -->
+   <update id="telModify">
+     UPDATE USER_INFO
+     SET USER_TEL = #{user_tel}
+     WHERE USER_DSTN_CD = #{user_dstn_cd}
+   </update>
+   
+   
+   <!-- 활용정보 수정시 기존에 있던 값 조회 쿼리  -->
+   <select id="myPlusInfo" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+       SELECT CRYPTPACK.DECRYPT(UI.USER_PW, '123456') "USER_PW", UP.USER_DSTN_CD, UI.USER_NAME
+            , UI.USER_TEL, TO_CHAR(UI.USER_DATE, 'YYYY-MM-DD') "USER_DATE", UP.SSN, UP.MRG_CD
+            , UP.CHILD_CD, UP.FML_CD, UP.PET_CD, UP.CAR_CD, UP.HOUSE_CD
+            , ASE.AREA_FST_CD, UP.AREA_SEC_CD, JS.JOB_FST_CD, UP.JOB_SEC_CD
+       FROM USER_PLUS UP
+       LEFT JOIN USER_INFO UI
+       ON UP.USER_DSTN_CD = UI.USER_DSTN_CD
+       LEFT JOIN AREA_SEC ASE
+       ON UP.AREA_SEC_CD = ASE.AREA_SEC_CD
+       LEFT JOIN JOB_SEC JS
+       ON UP.JOB_SEC_CD = JS.JOB_SEC_CD
+       WHERE UI.USER_DSTN_CD = #{user_dstn_cd}
+   </select>
+   
+   
+   <!--  내 정보에서 활용정보 수정쿼리 -->
+   <update id="plusModify">
+    UPDATE USER_PLUS
+    SET MRG_CD = #{mrg_cd}
+       ,CHILD_CD = #{child_cd}
+       ,FML_CD = #{fml_cd}
+       ,HOUSE_CD = #{house_cd}
+       ,PET_CD = #{pet_cd}
+       ,CAR_CD = #{car_cd}
+       ,AREA_SEC_CD = #{area_sec_cd}
+       ,JOB_SEC_CD = #{job_sec_cd}
+    WHERE USER_DSTN_CD = #{user_dstn_cd}
+   </update>
+   
+   <!-- 수정된 내정보 확인 -->
+   <select id="myInfoCheck" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+      SELECT UI.USER_TEL, UP.SSN, UP.MRG_CD
+     		, UP.CHILD_CD, UP.FML_CD, UP.PET_CD, UP.CAR_CD, UP.HOUSE_CD
+     		, ASE.AREA_FST_CD, UP.AREA_SEC_CD, JS.JOB_FST_CD, UP.JOB_SEC_CD
+	  FROM USER_PLUS UP
+	  LEFT JOIN USER_INFO UI
+	  ON UP.USER_DSTN_CD = UI.USER_DSTN_CD
+	  LEFT JOIN AREA_SEC ASE
+	  ON UP.AREA_SEC_CD = ASE.AREA_SEC_CD
+	  LEFT JOIN JOB_SEC JS
+	  ON UP.JOB_SEC_CD = JS.JOB_SEC_CD
+	  WHERE UI.USER_DSTN_CD = #{user_dstn_cd}
+   </select>
+   
+   
+   <!-- 비밀번호 수정쿼리 -->
+   <update id="pwModify">
+   	UPDATE USER_INFO
+   	SET USER_PW = CRYPTPACK.ENCRYPT(#{user_pw}, '123456')
+   	WHERE USER_DSTN_CD = #{user_dstn_cd}
+   </update>
+
+
+	<!-- 탈퇴 시 백업 테이블에 등록 쿼리 -->
+    <insert id="userBackUp">
+    INSERT INTO LEAVE_INFO(LEAVE_ID, USER_DSTN_CD, LEAVE_NAME, LEAVE_PW, LEAVE_TEL, USER_DATE, LEAVE_DATE)
+    VALUES(LEAVE_INFO_SEQ.NEXTVAL, #{user_dstn_cd}, #{user_name}, CRYPTPACK.ENCRYPT(#{user_pw}, '123456'), #{user_tel}, #{user_date}, SYSDATE)
+    </insert>
+ 
+   
+    <!-- 탈퇴 시 이용자 기본 정보 테이블에서 삭제 쿼리 -->
+	<delete id="leave">
+	DELETE
+    FROM USER_INFO
+    WHERE USER_DSTN_CD = #{user_dstn_cd}
+	</delete>
+	
+
+	<!-- 고객센터 추가 -->
+	<!-- 공지사항 리스트 조회 -->
+	<select id="userNotiList" resultType="com.test.mvc.UserDTO">
+	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE, NOTI_PIN
+	FROM NOTI
+    ORDER BY NOTI_PIN DESC, NOTI_DATE DESC
+	</select>
+	
+	<!-- 문의하기 리스트 조회 -->
+	<select id="userQnaList" resultType="com.test.mvc.UserDTO">
+	SELECT Q.QNA_CD, Q.QNA_TITLE, UI.USER_NAME, Q.QNA_DATE, Q.QNA_VIEW, DECODE(AA.AD_ANSR_CD, NULL , '-', '완료') "AD_ANSR_CD"
+	FROM QNA Q LEFT JOIN AD_ANSR AA
+	ON Q.QNA_CD = AA.QNA_CD
+	LEFT JOIN USER_INFO UI
+	ON Q.USER_DSTN_CD = UI.USER_DSTN_CD
+	ORDER BY Q.QNA_CD DESC
+	</select>
+	
+	
+	<!-- 문의하기 insert -->
+	<insert id="userQnaReg">
+	INSERT INTO QNA(QNA_CD, USER_DSTN_CD, QNA_TITLE, QNA_CONT, QNA_DATE) 
+	VALUES(QNA_SEQ.NEXTVAL, #{user_dstn_cd}, #{qna_title}, #{qna_cont}, #{qna_date} )
+	</insert>
+	
+	
+	<!-- 문의하기 등록글 한 건 조회, 관리자 답변 -->
+	<select id="userQnaSelect" resultType="com.test.mvc.UserDTO">
+	SELECT Q.QNA_CD, Q.QNA_TITLE, Q.USER_DSTN_CD, UI.USER_NAME, Q.QNA_DATE, Q.QNA_CONT
+          , DECODE(AA.AD_ANSR_CD, NULL , ' ', AA.AD_ANSR_CONT) "AD_ANSR_CONT", AA.AD_ANSR_CD
+	FROM QNA Q LEFT JOIN AD_ANSR AA
+	ON Q.QNA_CD = AA.QNA_CD
+	LEFT JOIN USER_INFO UI
+	ON Q.USER_DSTN_CD = UI.USER_DSTN_CD
+	WHERE Q.QNA_CD = #{qna_cd}
+	</select>
+	
+	
+	<!-- 공지사항 한 건 조회 -->
+	<select id="userNotiSelect" resultType="com.test.mvc.UserDTO">
+	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE
+	FROM NOTI
+	WHERE NOTI_CD=#{noti_cd}
+	</select>
+
+	<!-- 문의글 업데이트 -->
+	<update id="userQnaUpdate">
+	UPDATE QNA
+	SET QNA_TITLE = #{qna_title}, QNA_CONT = #{qna_cont}
+	WHERE QNA_CD = #{qna_cd}
+	</update>
+	
+	<!-- 문의글 삭제 -->
+	<delete id="userQnaDelete">
+	DELETE
+	FROM QNA
+	WHERE QNA_CD = #{qna_cd}
+	</delete>
+
+	<!-- 공지사항 조회수 증가 쿼리문 -->
+	<update id="notiViewPlus">
+ 	UPDATE NOTI
+	SET NOTI_VIEW = NOTI_VIEW+1
+	WHERE NOTI_CD=#{noti_cd}
+	</update>
+	
+	
+	<!-- 
+	<select id="fstCateList" parameterType="com.test.mvc.UserDTO" resultType="com.test.mvc.UserDTO">
+		SELECT CATE_FST_CD, CATE_FST_NAME
+		FROM CATE_FST
+		WHERE INOUT_CD=#{inout_cd}
+	</select>
+	-->
+	
+	<!-- 
+	<select id="getList" resultType="com.test.mvc.UserDTO" parameterType="String">
+		SELECT CATE_FST_CD, CATE_FST_NAME
+		FROM CATE_FST
+		WHERE INOUT_CD=#{inout_cd}
+	</select>	
+	
+	<select id="getName" resultType="String" parameterType="String">
+	   	SELECT *
+		FROM CATE_FST
+		WHERE INOUT_CD=#{inout_cd}
+	</select>
+	-->
+	
+	<!-- 태형 추가 -->
+	
+	
+	<!-- 해당 년월 일별 수입 총합 -->
+	<select id="calendarInTot" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+		SELECT TO_CHAR(ACNT_DATE, 'DD') "DAY", SUM(AMNT) "TOT"
+		FROM ACNT A JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE A.USER_DSTN_CD=#{user_dstn_cd}
+		AND FN_YEAR(ACNT_DATE)=#{year} AND FN_MON(ACNT_DATE)=#{month}
+		AND CF.INOUT_CD=1
+		GROUP BY ACNT_DATE
+	</select>
+	
+	<!-- 해당 년월 일별 지출 총합 -->
+	<select id="calendarOutTot" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+		SELECT TO_CHAR(ACNT_DATE, 'DD') "DAY", SUM(AMNT) "TOT"
+		FROM ACNT A JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE A.USER_DSTN_CD=#{user_dstn_cd}
+		AND FN_YEAR(ACNT_DATE)=#{year} AND FN_MON(ACNT_DATE)=#{month}
+		AND CF.INOUT_CD=2
+		GROUP BY ACNT_DATE
+	</select>
+	
+	<!-- 모든 카테고리별 통계 -->
+	<select id="inOutData" resultType="com.test.mvc.UserDTO">
+		SELECT CATE_FST_1, CATE_FST_2, CATE_FST_3, CATE_FST_4, CATE_FST_5, CATE_FST_6,
+		CATE_FST_7, CATE_FST_8, CATE_FST_9, CATE_FST_10, CATE_FST_11, CATE_FST_12,
+		CATE_FST_13, CATE_FST_14, CATE_FST_15, CATE_FST_16, CATE_FST_17, CATE_FST_18, CATE_FST_19
+		FROM
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_1"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=1),
+		
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_2"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=2),
+		
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_3"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=3),
+		
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_4"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=4),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_5"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=5),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_6"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=6),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_7"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=7),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_8"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=8),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_9"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=9),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_10"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=10),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_11"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=11),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_12"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=12),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_13"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=13),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_14"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=14),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_15"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=15),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_16"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=16),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_17"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=17),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_18"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=18),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_19"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=19)
+	</select>
+
+
+</mapper>

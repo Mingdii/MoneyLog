@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+		
+	<context:component-scan base-package="com.test.mvc" />
+
+	<bean id="localDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver"></property>
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe"></property>
+		<property name="username" value="moneylog"></property>
+		<property name="password" value="java006$"></property>
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="localDataSource"></property>
+		<property name="mapperLocations" value="classpath:com/test/mybatis/mapper/*.xml"></property>
+	</bean>
+	
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory"></constructor-arg>
+	</bean>
+	
+	
+	<!-- =================================== 민지 추가 ========================================= -->
+		
+	<!-- UserInfoDAO 등록 -->
+	<bean id="UserInfoDAO" class="com.test.mvc.UserInfoDAO">
+		<property name="dataSource" ref="localDataSource"></property>
+	</bean>
+	
+	<!-- controller 등록 -->
+	<bean name="/selectform.action"  class="com.test.mvc.SelectFormController">
+		<property name="dao" ref="UserInfoDAO"></property>
+	</bean>
+
+	<!-- 아이디 중복 체크 -->
+	<bean name="/checkid.action" class="com.test.mvc.CheckIdController">
+		<property name="dao" ref="UserInfoDAO"></property>
+	</bean>
+
+	<!-- 비밀번호 찾기 -->
+	<bean name="/findpw.action" class="com.test.mvc.FindPwController">
+		<property name="dao" ref="UserInfoDAO"></property>
+	</bean>
+	
+	<!-- 아이디 찾기 -->
+	<bean name="/findid.action" class="com.test.mvc.FindIdController">
+		<property name="dao" ref="UserInfoDAO"></property>
+	</bean>
+	
+	<!-- =================================== 민지 추가 ========================================= -->
+	
+</beans>

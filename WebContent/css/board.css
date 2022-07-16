@@ -1,0 +1,194 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
+
+font-family: 'Noto Sans KR', sans-serif;
+
+*
+{
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 400;
+}
+h1, h2, h3, h4, h5, h6
+{
+    font-weight: 900;
+    font-size: 50px;
+}
+
+hr 
+{
+    color:#ddd;
+	background-color:#ddd; 
+	height:3px;
+	border:none;
+/*	max-width:60%;*/
+}
+
+#moneyList_title
+{
+	width:690px;
+	height:40px;
+	text-align:left;
+	font-weight: bold;
+	line-height:40px;
+	font-size:30pt;
+	text-align: center;
+	color: #EFD345;
+	margin-bottom:30px;
+}
+
+
+.table
+{
+	border-collapse: collapse;
+	width: 100%;
+	line-height: 1.5;
+    border-top: 1px solid #ccc;
+}
+
+.table th
+{
+	background-color: #92B4EC;
+	border: 1px clear;
+	line-height: 150%;
+	text-align: center;
+	font-size: 18px;
+}
+
+.table td
+{
+	font-size: 12pt;
+	border: 1px clear;
+	line-height: 150%;
+	text-align: center;
+}
+
+
+#paging 
+{
+	clear:both;
+	height:32px;
+	line-height:100px;
+	margin-top:30px;
+	text-align:center;
+}
+
+#List_title
+{
+	width:690px;  
+	height:40px;
+	text-align:left;
+	font-weight: bold;
+	line-height:40px;
+	font-size:30pt;
+	color: #595260;
+	margin-bottom:30px;
+}
+
+#Header
+{
+	place-items: left;
+	display: grid;
+	width:345px;
+	text-align:left;
+}
+
+.selectField 
+{
+	border:1px solid; 
+	border-color:#666666; 
+	background-color:#ffffff; 
+	font-size:10pt;
+	height: 35px;
+	margin-bottom:20px;
+}
+
+.textField 
+{
+	border:1px solid; 
+	height: 35px;
+	border-color:#666666; 
+	background-color:#ffffff; 
+	font-size:10pt;
+	margin-bottom:20px;
+}
+
+
+/* .newpost 
+{
+    padding-left: 3px;
+    vertical-align: baseline;
+    width: 10px !important
+}
+*/
+
+#cont
+{
+	float: right;
+}
+
+#reset, #rept, #submit
+{
+	float: right;
+	margin-right: 15px;
+}
+
+.content_title
+{
+	text-indent : 2em;
+	color: #595260; 
+	margin-bottom:10px; 
+	padding-top: 30px; 
+}
+
+
+.table2
+{
+	border-collapse: collapse;
+	border-top: 3px solid #036;
+	border-bottom: 3px solid #036;
+	width: 90%;
+	margin-left: 15px;
+}
+
+.table2 th
+{
+	border: 1px clear;
+	border-left: 50px;
+	border-right: 0px;
+	width: 25%;
+	
+	font-size: 18px;
+	background-color: #92B4EC;
+	font-weight: bold;
+	line-height: 150%;
+	text-align: center;
+	padding-top: 20px;
+}
+
+.table2 td
+{
+	border: 1px clear;
+	border-left: 50px;
+	border-right: 0px;
+	
+	font-size: 12px;
+	font-size: 12pt;
+	line-height: 150%;
+	text-align: left;
+	padding-left:20px;
+	padding-top: 20px;
+	padding-bottom: 10px;
+	
+}
+
+.table3
+{
+	border-collapse: collapse;
+	border-bottom: 1px solid gray;
+	width: 102%;
+}
+
+.table3 td
+{
+	text-align: left;
+}

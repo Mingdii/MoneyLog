@@ -1,0 +1,80 @@
+@charset "utf-8";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=Roboto:wght@300;400&display=swap');
+
+/* reset */
+body {margin: 0;}
+h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, p, table {margin: 0; padding: 0;}
+h1, h2, h3, h4, h5, h6 {font-weight: 600;}
+header, main, footer, section, article, aside, nav {display: block;}
+a {color: inherit; text-decoration: inherit;}
+a img {border: none;}
+img {vertical-align: middle; max-width: 100%;}
+li {list-style: none;}
+
+/*layout*/
+.wrap {position: relative;  font-family: 'Noto Sans KR', sans-serif; letter-spacing: -1px;}
+
+/*fullPage*/
+.section {background-size: cover; position: relative;}
+#section1 {background: #ddd; /*이미지 슬라이드 영역*/}
+
+/*header*/
+header {position: fixed; width: 100%; top:0; left: 0;z-index: 9999; border-bottom: 1px solid rgba(255,255,255,0.1);}
+.innerHeader {width: 1300px; background: none; margin: 0 auto; padding: 0 40px; box-sizing:border-box; height: 80px; overflow: hidden;transition: all 0.5s;}
+.innerHeader.on {height: 300px; background: #000; transition: all 0.5s;}
+.innerHeader .logo {float: left;line-height: 80px;}
+.innerHeader .gnb {float: rigth; margin-left: 200px;}
+.innerHeader .gnb > li {float: left; width: 150px; position: relative;}
+.innerHeader .gnb > li > a {display: block; text-align: center; font-size: 17px;color:#fff; text-transform: uppercase;letter-spacing: 1px; line-height: 80px;}
+.innerHeader .gnb > li > .inner {position: absolute; width: 100%; left: 0; top:90px; display: none;}
+.innerHeader .gnb > li > .inner.on {display: block;}
+.innerHeader .gnb > li > .inner li a {display: block; width: 100%; height: 100%;text-align: center;font-size: 14px; line-height: 3; color:#999;}
+.innerHeader .gnb > li > .inner li a:hover, .innerHeader .gnb > li > .inner li a:focus {color:#fff; transition: all 0.3s;}  
+.innerHeader .franchise {float: right; font-size: 15px; color:#507219; background: #fff;width: 130px; height: 44px;border-radius: 30px;text-align: center; line-height: 44px;margin-top: 20px;}
+
+
+
+.fullPageWrap {position: relative;}
+.fullPageWrap .rightNav{position: fixed; top:40%; right: 40px; width: 100px; }
+.fullPageWrap .rightNav li {height: 30px; line-height: 30px;}
+.fullPageWrap .rightNav li a{display: block; width: 100%; height: 100%; color:#96cc29; font-size: 15px; text-align:left; position: relative;}
+.fullPageWrap .rightNav li a span {display: block; text-align:right; position: absolute; top:0; right: 50px; opacity: 0; transition: all 0.25s ease;}
+.fullPageWrap .rightNav li a:after {content: ''; display: block; position: absolute; top:50%;right: 0; width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.5); }
+
+/*rightNav motion*/
+.fullPageWrap .rightNav li.active a span {opacity: 1; right: 30px; transition: all 0.25s ease-in-out;}
+.fullPageWrap .rightNav li.active a:after {right: -2px; width: 12px; height: 12px;border:2px solid #96cc29; border-radius: 12px;  background: rgba(255,255,255,0); box-sizing: border-box;margin-top: -6px; }
+
+/*footer*/
+.footer {background: #ddd; height: 400px;}
+
+/*section1*/
+.visual {width: 100%; height: 100vh;}
+.visual .list {width: 100%; height: 100%; position: relative; background-repeat: no-repeat; background-size: cover; background-position: center;}
+.visual .list .textBox {position: absolute; top: 32%; left: 0; width: 100%; text-align: center;}
+.visual .list .textBox:after {content: ''; display: block; position: absolute; top:-80px; left: 50%; margin-left: -1px; width: 1px; height: 60px; background-color: #fff;}
+.visual .list .textBox .tit {color:#fff; font-size: 80px; line-height: 90px; letter-spacing: -1px; transform:translate(0,30px); transition: all 0.45s ease;opacity: 0; font-weight: 500; }
+.visual .list .textBox .tit span {display: block; margin-bottom: 20px; color: #fff; font-size: 40px; font-weight: 300; line-height: 44px;}
+.visual .list .textBox .txt {margin-top: 25px; color:#fff; font-size: 20px; transform:translate(0,-10px); transition: all 0.45s ease;opacity: 0; }
+.visual .list .textBox .dot {opacity: 0;}
+
+/*section1 motion*/
+.visual .list.slick-active .textBox .tit {opacity: 1; transform: translate(0,0); transition:  all 0.45s ease-in-out;}
+.visual .list.slick-active .textBox .txt {opacity: 0.7; transform: translate(0,0); transition:  all 0.45s ease-in-out;}
+
+
+.visual .slick-dots {position: absolute; bottom: 10%; left: 50%; margin-left: -350px; width: 700px;text-align: center;  z-index: 1000;}
+.visual .slick-dots li {display: block; float: left; position: relative; width: 145px; height: 100px; margin: 0 15px; cursor: pointer; opacity: 0.5s;}
+.visual .slick-dots li:after{content: ''; display: block; position:absolute; top:0; left: 0; width:100%; height: 6px; background: rgba(255,255,255,4); opacity: 0.5;}
+.visual .slick-dots li:before {content: ''; display: block; position:absolute; top:0; left: 0; width:0; height: 6px; background: rgba(255,255,255,1); opacity: 0;}
+.visual .slick-dots .pager-tit {margin-top: 25px; color: #fff; font-size: 15px; text-align: left;letter-spacing: -1px;}
+.visual .slick-dots .slick-active {opacity: 1;}
+.visual .slick-dots .slick-active:after {border:1px solid rgba(214,214,214,1); background-color: rgba(255,255,255,0);box-sizing: border-box; opacity: 1;}
+.visual .slick-dots .slick-active:before {width: 100%; border:1px solid #fff; background-color: #fff; box-sizing: border-box; opacity: 1; transition:  width 3s ease;}
+
+
+.nav-text {font-size: 20px; margin-left: 30px;}
+@media (min-width: 991px)
+{
+    .nav-text {margin-left: 700px; font-size: 20px;}
+}
