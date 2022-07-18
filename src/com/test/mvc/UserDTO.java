@@ -18,7 +18,7 @@ public class UserDTO
     , noti_cd, noti_title, noti_cont, noti_view, noti_date, noti_pin
     , ad_ansr_cd, ad_cd, ad_ansr_cont, ad_ansr_date;
 	
-	private int prevNum, nextNum;
+	private int prevNum, nextNum, start, end;
 	
 	// 태형 추가 (캘린더 총합)
 	private int tot;
@@ -975,6 +975,26 @@ public class UserDTO
 	public void setNextNum(int nextNum)
 	{
 		this.nextNum = nextNum;
+	}
+
+	public int getStart()
+	{
+		return start;
+	}
+
+	public void setStart(int start)
+	{
+		this.start = start;
+	}
+
+	public int getEnd()
+	{
+		return end;
+	}
+
+	public void setEnd(int end)
+	{
+		this.end = end;
 	}
 	
 	

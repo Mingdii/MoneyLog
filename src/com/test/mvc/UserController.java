@@ -1055,23 +1055,54 @@ public class UserController
 		return result;
 	}
 	
+	
+	// 현수 추가 ================================================================================================
+	
 	// 고객센터 사이드바에서 공지사항 클릭시 공지사항 리스트      
 	@RequestMapping(value="/usernotilist.action", method=RequestMethod.GET)
-	public String UserNotiList(Model model) throws SQLException  
+	public ModelAndView UserNotiList()
 	{
-		String result = null;
-		
+		int pageNum = 1;
 		IUserDAO dao =sqlSession.getMapper(IUserDAO.class);
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName("/UserNotiList.jsp");
 		
-		model.addAttribute("userNotiList", dao.userNotiList());      
+		mv.addObject("notiCount", dao.notiCount());
 		
-		result = "/UserNotiList.jsp";
+		// 페이징
+		Paging paging = new Paging();
 		
-		return result;
+		// 한 페이지당 게시글 개수
+		int numPerPage = 2;
+		
+		// 페이지 개수
+		int pageCount = paging.getPageCount(numPerPage, dao.notiCount());
+
+		// 페이지 기본 url
+		String url = "./usernotilist.action";
+		
+		// ★ 페이지 index 
+		String strList = paging.pageIndexList(pageNum, pageCount, url);
+
+		// 스타트 앤드 구하기 (해당 페이지에 어떤 게시글들이 들어갈지)
+		
+		int count = 0;
+		count = dao.notiCount();
+		int start = count-((pageNum*numPerPage)-1);
+		int end = count-((pageNum-1)*numPerPage);
+
+		UserDTO dto = new UserDTO();
+		dto.setStart(start);
+		dto.setEnd(end);
+		
+		mv.addObject("pageCount", pageCount);
+		mv.addObject("strList", strList);
+		mv.addObject("userNotiList", dao.userNotiList());      
+
+		return mv;
 		
 	}
 	
-	// 현수 추가 ================================================================================================
 	
 	// 공지사항 항목 이동      
 	@RequestMapping(value="/usernotiselect.action", method=RequestMethod.GET)

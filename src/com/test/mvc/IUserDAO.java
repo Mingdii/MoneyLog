@@ -98,6 +98,9 @@ public interface IUserDAO
  	// 공지사항 조회수 증가
  	public Integer notiViewPlus(UserDTO dto);
  	
+	// 공지사항 수(페이징)
+	public int notiCount();
+	
  	
  	// 문의하기 리스트 확인
  	public ArrayList<UserDTO> userQnaList();

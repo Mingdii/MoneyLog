@@ -205,11 +205,13 @@ main { margin-left: 250px; margin-top: 55px; margin-right: 100px;}
 #adPostOpen table {text-align: center;}
 #adPostOpen table th {font-weight: 700; background-color: #F7EDE2; }
 #adPostOpen .list-group-item {border-radius: 4px; margin-top: 8px; margin-bottom: 20px;}
+#adPostOpen tbody tr td { text-align: center; }
 
 /*AdPostPrivate.jsp*/
 #adPostPrivate table {text-align: center;}
-#adPostPrivate table th {font-weight: 700; background-color: #F7EDE2; }
+#adPostPrivate table th {font-weight: 700; background-color: #F7EDE2; text-align: center; }
 #adPostPrivate .list-group-item {border-radius: 4px; margin-top: 8px; margin-bottom: 20px;}
+#adPostPrivate tbody tr td { text-align: center; }
 
 /*AdPostInfo.jsp*/
 #adPostInfo table {text-align: center;}

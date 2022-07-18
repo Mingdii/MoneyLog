@@ -90,17 +90,23 @@
 						</c:if>
 						
 						<c:if test="${not empty userNotiList}">
-		                <c:forEach var="userNoti" items="${userNotiList }" varStatus="status">
-		                <tr>
-			                <td scope="row" class="mobile" style="text-align:center;">${fn:length(userNotiList) - status.index }</td>
-			                <td><a href="./usernotiselect.action?noti_cd=${userNoti.noti_cd}" style="color: #000000;">${userNoti.noti_title }</a></td>
-			                <td class="mobile" style="text-align:center;">머니리뷰 관리자</td>
-			                <td class="mobile" style="text-align:center;">
-			                	<fmt:parseDate value="${userNoti.noti_date }" var="noti_date" pattern="yyyy-mm-dd" />
-								<fmt:formatDate value="${noti_date}" pattern="yyyy-mm-dd" />
-			                </td>
-			                <td class="mobile" style="text-align:center;">${userNoti.noti_view }</td>
-						</tr>
+		                <c:forEach var="userNoti" items="${userNotiList }" varStatus="loop">
+			                <!-- <tr style="background-color: #ffebb1;"> -->
+			                <tr>
+			                	<td scope="row" class="mobile" style="text-align:center;">
+	        						${userNoti.noti_cd }
+				                	<%-- ${fn:length(userNotiList) - status.index } --%>
+			                	</td>
+				                <td>
+				                	<a href="./usernotiselect.action?noti_cd=${userNoti.noti_cd}" style="color: #000000;">${userNoti.noti_title }</a>
+			                	</td>
+				                <td class="mobile" style="text-align:center;">머니리뷰 관리자</td>
+				                <td class="mobile" style="text-align:center;">
+				                	<fmt:parseDate value="${userNoti.noti_date }" var="noti_date" pattern="yyyy-mm-dd" />
+									<fmt:formatDate value="${noti_date}" pattern="yyyy-mm-dd" />
+				                </td>
+				                <td class="mobile" style="text-align:center;">${userNoti.noti_view }</td>
+							</tr>
 						</c:forEach>
 						</c:if>
 
@@ -112,7 +118,8 @@
 					<div class="row">
 						<div class="col" style="place-items: center; display: grid;">
 							<div id="paging">
-								<p>1 <span style="color: #92B4EC;">Prev</span> 21 22 23 24 25 26 27 28 29 30 <span style="color: #92B4EC;">Next</span> 54</p>		
+								<p>${strList }${start }${end }</p>		
+								<!-- <p>1 <span style="color: #92B4EC;">Prev</span> 21 22 23 24 25 26 27 28 29 30 <span style="color: #92B4EC;">Next</span> 54</p> -->		
 						 	</div>	
 						</div>
 					</div>

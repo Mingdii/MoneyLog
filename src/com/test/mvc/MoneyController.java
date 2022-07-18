@@ -31,7 +31,7 @@ public class MoneyController
 		Paging paging = new Paging();
 		
 		// 한 페이지당 게시글 개수
-		int numPerPage = 3;
+		int numPerPage = 5;
 		
 		// 페이지 개수
 		int pageCount = paging.getPageCount(numPerPage, dao.allPostCount());

@@ -410,10 +410,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<!-- 고객센터 추가 -->
 	<!-- 공지사항 리스트 조회 -->
 	<select id="userNotiList" resultType="com.test.mvc.UserDTO">
-	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE, NOTI_PIN
-	FROM NOTI
-    ORDER BY NOTI_PIN DESC, NOTI_DATE DESC
+	SELECT RNUM, NOTI_TITLE, NOTI_CONT, NOTI_DATE, NOTI_VIEW, NOTI_CD, NOTI_PIN
+	FROM (SELECT ROW_NUMBER() OVER(ORDER BY NOTI_PIN DESC, NOTI_CD DESC) AS RNUM
+	           , NOTI_TITLE, NOTI_CONT, NOTI_DATE, NOTI_VIEW, NOTI_CD, NOTI_PIN
+	      FROM NOTI
+	      ORDER BY NOTI_PIN DESC, NOTI_CD DESC)
+	<!-- WHERE RNUM <![CDATA[ >= ]]> #{start } AND RNUM <![CDATA[ <= ]]> #{end } -->
 	</select>
+	
+	<!-- 공지사항 한 건 조회 -->
+	<select id="userNotiSelect" resultType="com.test.mvc.UserDTO">
+	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE
+	FROM NOTI
+	WHERE NOTI_CD=#{noti_cd}
+	</select>
+	
+	<!-- 공지사항 페이징 -->
+	<select id="notiCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) AS NOTI_COUNT
+		FROM NOTI
+	</select>
+	
+	
 	
 	<!-- 문의하기 리스트 조회 -->
 	<select id="userQnaList" resultType="com.test.mvc.UserDTO">
@@ -442,14 +460,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	LEFT JOIN USER_INFO UI
 	ON Q.USER_DSTN_CD = UI.USER_DSTN_CD
 	WHERE Q.QNA_CD = #{qna_cd}
-	</select>
-	
-	
-	<!-- 공지사항 한 건 조회 -->
-	<select id="userNotiSelect" resultType="com.test.mvc.UserDTO">
-	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE
-	FROM NOTI
-	WHERE NOTI_CD=#{noti_cd}
 	</select>
 
 	<!-- 문의글 업데이트 -->
