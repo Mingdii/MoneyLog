@@ -205,24 +205,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<!-- 회원 정보 조회 -->  
 	<select id="adUserInfo" resultType="com.test.mvc.AdminDTO">
 	SELECT USER_DSTN_CD, USER_NAME, USER_ID, USER_TEL, USER_DATE
-     , SSN, PET_NUM, MRG_YN, CHILD_NUM, FML_NUM, CAR_NUM, HOUSE_TYPE
-     , AREA_FST_NAME, AREA_SEC_NAME, JOB_FST_NAME, JOB_SEC_NAME
+         , SSN, PET_NUM, MRG_YN, CHILD_NUM, FML_NUM, CAR_NUM, HOUSE_TYPE
+         , AREA_FST_NAME, AREA_SEC_NAME, JOB_FST_NAME, JOB_SEC_NAME
 	FROM USER_VIEW
 	WHERE USER_DSTN_CD = #{user_dstn_cd}
 	</select>
 	
-	<!-- 회원 신고 내역 리스트 조회 -->   
+	<!-- 회원 신고 내역 리스트 조회 (6개월 내 승인/반려 모두 조회)-->   
 	<select id="userReptHistory" resultType="com.test.mvc.AdminDTO">
 	SELECT AD_POST_REPT_CD, AD_POST_REPT_DATE "AD_POST_REPT_DATE"
-     , POST_CD, USER_DSTN_CD, USER_DSTN_CD "POST_REG_USER"
+         , POST_CD, USER_DSTN_CD, USER_DSTN_CD "POST_REG_USER"
+         , POST_REPT_CD, CNFM_RESULT
 	FROM POST_REPT_VIEW
 	WHERE USER_DSTN_CD = #{user_dstn_cd}
+	  AND CNFM_CD = 1
 	  AND AD_POST_REPT_DATE >= (ADD_MONTHS(SYSDATE, -6))
 	UNION ALL
 	SELECT AD_CMNT_REPT_CD, AD_CMNT_REPT_DATE
 	     , POST_CD, USER_DSTN_CD, POST_REG_USER
+	     , CMNT_REPT_CD, CNFM_RESULT
 	FROM CMNT_REPT_VIEW
 	WHERE USER_DSTN_CD = #{user_dstn_cd}
+	  AND CNFM_CD = 1
 	  AND AD_CMNT_REPT_DATE >= (ADD_MONTHS(SYSDATE, -6))
 	ORDER BY AD_POST_REPT_DATE DESC
 	</select>
@@ -270,6 +274,55 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
      AND CB.CMNT_BAN_CD IS NOT NULL
 	ORDER BY BAN_DATE DESC
 	</select>
+	
+	<!-- 게시글 신고내역 리스트 조회 -->
+	<select id="adPostReptList" resultType="com.test.mvc.AdminDTO">
+	SELECT POST_REPT_CD, OPINION, REPT_CATE_NAME, POST_REPT_DATE
+	     , CNFM_RESULT, USER_DSTN_CD
+	FROM POST_REPT_VIEW
+	ORDER BY POST_REPT_CD DESC
+	</select>
+	
+	<!-- 게시글 신고내용 조회 -->
+	<select id="adPostRept" resultType="com.test.mvc.AdminDTO">
+	SELECT POST_REPT_CD, POST_REPT_DATE, POST_CD, REPT_USER_DSTN_CD
+         , CNFM_CD, CNFM_RESULT, AD_CD, AD_POST_REPT_CD, AD_POST_REPT_DATE
+         , OPINION, REPT_CATE_CD, REPT_CATE_NAME, POST_REPT_DTL_CONT
+         , USER_DSTN_CD, POST_TITLE, POST_DATE
+	FROM POST_REPT_VIEW
+	WHERE POST_REPT_CD = #{post_rept_cd}   
+	</select>
+	
+	<!-- 게시글 신고 승인/반려처리 -->
+	<insert id="adPostReptOk">
+    INSERT INTO AD_POST_REPT(AD_POST_REPT_CD, AD_CD, POST_REPT_CD, CNFM_CD)          
+	VALUES(AD_POST_REPT_SEQ.NEXTVAL, #{ad_cd} , #{post_rept_cd} , #{cnfm_cd})
+    </insert>
+	
+	<!-- 댓글 신고내역 리스트 조회 -->
+	<select id="adCmntReptList" resultType="com.test.mvc.AdminDTO">
+	SELECT CMNT_REPT_CD, CMNT_CONT, REPT_CATE_NAME, CMNT_REPT_DATE
+	     , CNFM_RESULT
+	FROM CMNT_REPT_VIEW
+	ORDER BY CMNT_REPT_CD DESC
+	</select>
+	
+	<!--댓글 신고내용 조회 -->
+	<select id="adCmntRept" resultType="com.test.mvc.AdminDTO">
+	SELECT CMNT_REPT_CD, CMNT_REPT_DATE, CMNT_CD, REPT_USER_DSTN_CD
+         , CNFM_CD, CNFM_RESULT, AD_CD, AD_CMNT_REPT_CD, AD_CMNT_REPT_DATE
+         , REPT_CATE_CD, REPT_CATE_NAME, CMNT_REPT_DTL_CONT
+         , USER_DSTN_CD, CMNT_CONT, CMNT_DATE, POST_CD
+	FROM CMNT_REPT_VIEW
+	WHERE CMNT_REPT_CD = #{cmnt_rept_cd}   
+	</select>
+	
+	<!-- 댓글 신고 승인/반려처리 -->
+	<insert id="adCmntReptOk">
+    INSERT INTO AD_CMNT_REPT(AD_CMNT_REPT_CD, AD_CD, CMNT_REPT_CD, CNFM_CD)          
+	VALUES(AD_CMNT_REPT_SEQ.NEXTVAL, #{ad_cd} , #{cmnt_rept_cd} , #{cnfm_cd})
+    </insert>
+
  	
  	<!-- 현지 끝=======================================================================================-->
 	

@@ -67,7 +67,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		VALUES(NOTI_SEQ.NEXTVAL, #{ad_cd}, #{noti_title}, #{noti_cont}, 0, #{noti_pin})
 	</insert>
 
-
 	<!-- ▼ 문의글 ▼ -->
 	
 	<!-- 문의글 페이징 - 전체 문의글 개수 -->

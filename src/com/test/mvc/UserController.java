@@ -60,8 +60,6 @@ public class UserController
 		IUserDAO dao = sqlSession.getMapper(IUserDAO.class);
 	 
 		UserDTO dto = dao.login(user_id, user_pw);
-	 
-		// 일반회원 로그인 / 관리자 로그인 분기해야함 ★
 		 	 
 		// 로그인 수행에 따른 성공 여부 확인 및 구분/분기
 		if(dto != null) 	

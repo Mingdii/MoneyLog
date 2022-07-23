@@ -147,21 +147,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	
 	
 	<!-- 당일 가계부 리스트 출력 -->
-	<select id="dayInoutList" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
-		SELECT AIV.USER_DSTN_CD
-		     , I.INOUT_CONT
-		     , AIV.ACNT_DATE
-		     , CF.CATE_FST_NAME
-		     , CS.CATE_SEC_NAME
-		     , AIV.ACNT_DTL_CONT
-		     , AIV.AMNT
+	<select id="dayInoutList" resultType="com.test.mvc.UserDTO">
+		SELECT I.INOUT_CONT AS INOUT_CONT
+		     , AIV.ACNT_DATE AS ACNT_DATE
+		     , CF.CATE_FST_NAME AS CATE_FST_NAME
+		     , CS.CATE_SEC_NAME AS CATE_SEC_NAME
+		     , AIV.ACNT_DTL_CONT AS ACNT_DTL_CONT
+		     , AIV.AMNT AS AMNT
 		FROM ACNT_INOUT_VIEW AIV LEFT JOIN CATE_SEC CS
 				  ON AIV.CATE_SEC_CD = CS.CATE_SEC_CD
 				     LEFT JOIN CATE_FST CF
 				       ON CS.CATE_FST_CD = CF.CATE_FST_CD
 		                  LEFT JOIN INOUT I
 		                    ON CF.INOUT_CD = I.INOUT_CD
-		WHERE AIV.USER_DSTN_CD = #{user_dstn_cd} AND AIV.ACNT_DATE = #{year}||FN_TWONUM(#{month})||FN_TWONUM(#{day})
+		WHERE AIV.USER_DSTN_CD = #{user_dstn_cd} AND AIV.ACNT_DATE = TO_DATE(#{yearMonthDay}, 'YYYY-MM-DD')
 		ORDER BY ACNT_CD DESC
 	</select>
 	
@@ -234,24 +233,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		FROM INOUT
 	</select>
 	
-	<!-- 1차 카테고리 출력(지출 선택) -->
+	<!-- 1차 카테고리 출력(전체) -->
 	<select id="fstCateList" resultType="com.test.mvc.UserDTO">
 		SELECT CATE_FST_CD, CATE_FST_NAME, INOUT_CD
 		FROM CATE_FST
-		WHERE INOUT_CD=2
 	</select>
 	
-	<!-- 2차 카테고리 출력(지출 전체 출력) -->
+	<!-- 2차 카테고리 출력(전체 출력) -->
 	<select id="secCateList" resultType="com.test.mvc.UserDTO">
 		SELECT CATE_SEC_CD, CATE_SEC_NAME, CATE_FST_CD
 		FROM CATE_SEC
-		WHERE CATE_FST_CD BETWEEN 4 AND 19
 	</select>
 	
 	<!-- 가계부 등록 -->
 	<insert id="acntReg">
 		INSERT INTO ACNT(ACNT_CD, USER_DSTN_CD, ACNT_DATE, CATE_SEC_CD, ACNT_DTL_CONT, AMNT) 
-		VALUES(ACNT_SEQ.NEXTVAL, #{user_dstn_cd}, TO_DATE(#{year}||FN_TWONUM(#{month})||'20', 'YYYY-MM-DD')
+		VALUES(ACNT_SEQ.NEXTVAL, #{user_dstn_cd}, TO_DATE( #{yearMonthDay}, 'YYYY-MM-DD')
 			 , #{cate_sec_cd} , #{acnt_dtl_cont}, #{amnt})
 	</insert>
 	<!-- 
@@ -413,10 +410,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<!-- 고객센터 추가 -->
 	<!-- 공지사항 리스트 조회 -->
 	<select id="userNotiList" resultType="com.test.mvc.UserDTO">
-	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE, NOTI_PIN
-	FROM NOTI
-    ORDER BY NOTI_PIN DESC, NOTI_DATE DESC
+	SELECT RNUM, NOTI_TITLE, NOTI_CONT, NOTI_DATE, NOTI_VIEW, NOTI_CD, NOTI_PIN
+	FROM (SELECT ROW_NUMBER() OVER(ORDER BY NOTI_PIN DESC, NOTI_CD DESC) AS RNUM
+	           , NOTI_TITLE, NOTI_CONT, NOTI_DATE, NOTI_VIEW, NOTI_CD, NOTI_PIN
+	      FROM NOTI
+	      ORDER BY NOTI_PIN DESC, NOTI_CD DESC)
+	<!-- WHERE RNUM <![CDATA[ >= ]]> #{start } AND RNUM <![CDATA[ <= ]]> #{end } -->
 	</select>
+	
+	<!-- 공지사항 한 건 조회 -->
+	<select id="userNotiSelect" resultType="com.test.mvc.UserDTO">
+	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE
+	FROM NOTI
+	WHERE NOTI_CD=#{noti_cd}
+	</select>
+	
+	<!-- 공지사항 페이징 -->
+	<select id="notiCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) AS NOTI_COUNT
+		FROM NOTI
+	</select>
+	
+	
 	
 	<!-- 문의하기 리스트 조회 -->
 	<select id="userQnaList" resultType="com.test.mvc.UserDTO">
@@ -445,14 +460,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	LEFT JOIN USER_INFO UI
 	ON Q.USER_DSTN_CD = UI.USER_DSTN_CD
 	WHERE Q.QNA_CD = #{qna_cd}
-	</select>
-	
-	
-	<!-- 공지사항 한 건 조회 -->
-	<select id="userNotiSelect" resultType="com.test.mvc.UserDTO">
-	SELECT NOTI_CD, NOTI_TITLE, NOTI_CONT, NOTI_VIEW, NOTI_DATE
-	FROM NOTI
-	WHERE NOTI_CD=#{noti_cd}
 	</select>
 
 	<!-- 문의글 업데이트 -->
@@ -498,7 +505,289 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		WHERE INOUT_CD=#{inout_cd}
 	</select>
 	-->
-	 
+	
+	<!-- 태형 추가 -->
+	
+	
+	<!-- 해당 년월 일별 수입 총합 -->
+	<select id="calendarInTot" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+		SELECT TO_CHAR(ACNT_DATE, 'DD') "DAY", SUM(AMNT) "TOT"
+		FROM ACNT A JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE A.USER_DSTN_CD=#{user_dstn_cd}
+		AND FN_YEAR(ACNT_DATE)=#{year} AND FN_MON(ACNT_DATE)=#{month}
+		AND CF.INOUT_CD=1
+		GROUP BY ACNT_DATE
+	</select>
+	
+	<!-- 해당 년월 일별 지출 총합 -->
+	<select id="calendarOutTot" resultType="com.test.mvc.UserDTO" parameterType="com.test.mvc.UserDTO">
+		SELECT TO_CHAR(ACNT_DATE, 'DD') "DAY", SUM(AMNT) "TOT"
+		FROM ACNT A JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		WHERE A.USER_DSTN_CD=#{user_dstn_cd}
+		AND FN_YEAR(ACNT_DATE)=#{year} AND FN_MON(ACNT_DATE)=#{month}
+		AND CF.INOUT_CD=2
+		GROUP BY ACNT_DATE
+	</select>
+	
+	<!-- 모든 카테고리별 통계 -->
+	<select id="inOutData" resultType="com.test.mvc.UserDTO">
+		SELECT CATE_FST_1, CATE_FST_2, CATE_FST_3, CATE_FST_4, CATE_FST_5, CATE_FST_6,
+		CATE_FST_7, CATE_FST_8, CATE_FST_9, CATE_FST_10, CATE_FST_11, CATE_FST_12,
+		CATE_FST_13, CATE_FST_14, CATE_FST_15, CATE_FST_16, CATE_FST_17, CATE_FST_18, CATE_FST_19
+		FROM
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_1"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=1),
+		
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_2"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=2),
+		
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_3"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=3),
+		
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_4"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=4),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_5"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=5),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_6"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=6),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_7"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=7),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_8"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=8),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_9"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=9),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_10"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=10),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_11"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=11),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_12"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=12),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_13"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=13),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_14"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=14),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_15"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=15),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_16"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=16),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_17"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=17),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_18"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=18),
+
+		(SELECT NVL(SUM(A.AMNT),0) AS "CATE_FST_19"
+		FROM ACNT A
+		JOIN CATE_SEC CS
+		ON A.CATE_SEC_CD = CS.CATE_SEC_CD
+		JOIN CATE_FST CF
+		ON CS.CATE_FST_CD = CF.CATE_FST_CD
+		JOIN INOUT I
+		ON CF.INOUT_CD = I.INOUT_CD
+		WHERE A.USER_DSTN_CD = #{user_dstn_cd}
+		AND FN_YEAR(A.ACNT_DATE)=#{year}
+		AND FN_MON(A.ACNT_DATE)=#{month}
+		AND CF.CATE_FST_CD=19)
+	</select>
 
 
 </mapper>
